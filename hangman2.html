@@ -77,6 +77,7 @@
                 .sort((a, b) => characterFrequency[b] - characterFrequency[a]);
 
             if (sortedFrequency.length > 0) {
+                console.log(sortedFrequency[0]);
                 return sortedFrequency[0];
             } else {
                 // No characters left to guess
@@ -88,6 +89,67 @@
         function findWordsWithSameLength() {
             const wordsWithSameLength = filterWordsByLength(wordToGuess.length);
             return wordsWithSameLength;
+        }
+
+        // Function to filter words by guessed pattern
+        function filterWordsByPattern(pattern) {
+            console.log({pattern})
+            return words.filter(word => {
+                if (word.length !== pattern.length) {
+                    return false;
+                }
+                for (let i = 0; i < pattern.length; i++) {
+                    if (pattern[i] !== '_' && pattern[i] !== word[i]) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        // Modify the computerGuess function
+        function computerGuess() {
+            // Check if there are any words matching the current guessed pattern
+            const filteredWords = filterWordsByPattern(guessedWord.join(""));
+            console.log({filteredWords});
+            
+            if (filteredWords.length === 0) {
+                // No words match the current guessed pattern, revert to the previous strategy
+                const sortedFrequency = Object.keys(characterFrequency)
+                    .filter(char => !guessedLetters.includes(char))
+                    .sort((a, b) => characterFrequency[b] - characterFrequency[a]);
+
+                if (sortedFrequency.length > 0) {
+                    return sortedFrequency[0];
+                } else {
+                    // No characters left to guess
+                    return '';
+                }
+            } else {
+                // Calculate character frequency for the filtered words
+                const filteredCharacterFrequency = {};
+                filteredWords.forEach(word => {
+                    word.split('').forEach(char => {
+                        if (!filteredCharacterFrequency[char]) {
+                            filteredCharacterFrequency[char] = 1;
+                        } else {
+                            filteredCharacterFrequency[char]++;
+                        }
+                    });
+                });
+
+                // Guess the most frequent character that hasn't been guessed yet in the filtered words
+                const sortedFilteredFrequency = Object.keys(filteredCharacterFrequency)
+                    .filter(char => !guessedLetters.includes(char))
+                    .sort((a, b) => filteredCharacterFrequency[b] - filteredCharacterFrequency[a]);
+
+                if (sortedFilteredFrequency.length > 0) {
+                    return sortedFilteredFrequency[0];
+                } else {
+                    // No characters left to guess in the filtered words
+                    return '';
+                }
+            }
         }
 
         // Main game loop
